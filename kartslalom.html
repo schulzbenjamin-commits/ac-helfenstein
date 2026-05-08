@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Kartslalom">
+<title>AC Helfenstein Kartslalom</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --gelb:#FFD700;--dunkel:#1A1A1A;--fehler:#E53E3E;--erfolg:#38A169;
+  --hell:#FFFFFF;--grau:#F5F5F5;--text:#1A1A1A;--text2:#666;
+  --border:#E0E0E0;--tab-bg:#FFF;--tab-in:#999;
+  --k1:#4CAF50;--k2:#2196F3;--k3:#FF9800;--k4:#9C27B0;--k5:#F44336;
+}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;background:var(--grau);color:var(--text);overflow:hidden}
+#app{display:flex;flex-direction:column;height:100%;height:100dvh}
+#screen{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:env(safe-area-inset-bottom)}
+#tabs{display:flex;background:var(--tab-bg);border-top:1px solid var(--border);padding-bottom:env(safe-area-inset-bottom);flex-shrink:0}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px;cursor:pointer;color:var(--tab-in);font-size:11px;font-weight:600;gap:3px;border:none;background:none;min-height:56px}
+.tab.active{color:var(--gelb)}
+.tab svg{width:24px;height:24px}
+.topbar{background:var(--hell);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10;padding-top:max(12px,env(safe-area-inset-top))}
+.topbar h1{flex:1;font-size:18px;font-weight:700}
+.topbar .back{background:none;border:none;color:var(--gelb);font-size:16px;font-weight:600;cursor:pointer;padding:4px 8px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 18px;border-radius:8px;border:none;cursor:pointer;font-size:15px;font-weight:600;min-height:44px}
+.btn-primary{background:var(--gelb);color:var(--dunkel)}
+.btn-danger{background:var(--fehler);color:#fff}
+.btn-ghost{background:none;border:1px solid var(--border);color:var(--text)}
+.btn-sm{padding:7px 12px;font-size:13px;min-height:36px}
+.fab{position:fixed;bottom:calc(72px + env(safe-area-inset-bottom));right:16px;width:56px;height:56px;border-radius:28px;background:var(--gelb);border:none;font-size:28px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;z-index:20}
+.list-item{background:var(--hell);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer}
+.list-item:active{background:var(--grau)}
+.badge{display:inline-block;padding:3px 8px;border-radius:12px;font-size:12px;font-weight:700;color:#fff}
+.k1{background:var(--k1)}.k2{background:var(--k2)}.k3{background:var(--k3)}.k4{background:var(--k4)}.k5{background:var(--k5)}.k-none{background:var(--text2)}
+.form-group{padding:12px 16px;background:var(--hell);border-bottom:1px solid var(--border)}
+.form-group label{display:block;font-size:13px;color:var(--text2);margin-bottom:6px;font-weight:500}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:16px;background:var(--hell);color:var(--text);-webkit-appearance:none}
+.form-group textarea{min-height:80px;resize:vertical}
+.section-header{padding:10px 16px 6px;font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;background:var(--grau)}
+.empty{text-align:center;padding:60px 20px;color:var(--text2)}
+.empty h3{font-size:18px;margin-bottom:8px;color:var(--text)}
+.card{background:var(--hell);border-radius:12px;overflow:hidden;margin:12px 16px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+/* Rennmodus */
+#rennmodus-screen{display:flex;height:100%;background:var(--dunkel);color:#fff}
+.renn-left{width:35%;border-right:1px solid #333;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.renn-left h2{padding:12px;font-size:14px;color:#aaa;border-bottom:1px solid #333;position:sticky;top:0;background:var(--dunkel)}
+.fahrer-row{padding:14px 12px;border-bottom:1px solid #222;cursor:pointer;display:flex;align-items:center;gap:10px}
+.fahrer-row.active{background:#2a2a1a;border-left:3px solid var(--gelb)}
+.fahrer-row .name{font-size:15px;font-weight:600}
+.fahrer-row .sub{font-size:12px;color:#888;margin-top:2px}
+.renn-right{flex:1;display:flex;flex-direction:column;padding:16px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.renn-fahrer-name{font-size:20px;font-weight:700;margin-bottom:4px}
+.renn-lauf-info{font-size:13px;color:#aaa;margin-bottom:16px}
+.stopwatch{background:#111;border-radius:16px;padding:20px;text-align:center;margin-bottom:16px}
+.stopwatch-time{font-size:56px;font-weight:700;font-variant-numeric:tabular-nums;font-family:'Courier New',monospace;color:var(--gelb);letter-spacing:2px}
+.stopwatch-btns{display:flex;gap:10px;margin-top:14px;justify-content:center}
+.sw-btn{padding:14px 28px;border-radius:10px;border:none;font-size:16px;font-weight:700;cursor:pointer;min-width:100px;min-height:56px}
+.sw-start{background:var(--erfolg);color:#fff}
+.sw-stop{background:var(--fehler);color:#fff}
+.sw-reset{background:#333;color:#ccc}
+.strafen-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.straf-btn{background:#1e1e1e;border:1px solid #333;border-radius:10px;padding:12px 8px;cursor:pointer;text-align:center;color:#fff}
+.straf-btn.active{border-color:var(--fehler)}
+.straf-btn .label{font-size:12px;color:#aaa;margin-bottom:4px}
+.straf-btn .count{font-size:28px;font-weight:700;color:var(--fehler)}
+.straf-btn .sek{font-size:11px;color:#666;margin-top:2px}
+.straf-btn-row{display:flex;align-items:center;gap:8px;background:#1e1e1e;border:1px solid #333;border-radius:10px;padding:10px 12px;margin-bottom:8px;cursor:pointer}
+.straf-btn-row .label{flex:1;font-size:14px}
+.straf-btn-row .count-ctrl{display:flex;align-items:center;gap:8px}
+.cnt-btn{width:36px;height:36px;border-radius:8px;border:none;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.cnt-minus{background:#333;color:#fff}
+.cnt-plus{background:var(--fehler);color:#fff}
+.cnt-val{font-size:20px;font-weight:700;color:var(--fehler);min-width:28px;text-align:center}
+.renn-save-area{margin-top:8px;display:flex;flex-direction:column;gap:8px}
+.zeit-summe{background:#111;border-radius:10px;padding:12px;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.zeit-summe .label{font-size:13px;color:#aaa}
+.zeit-summe .val{font-size:22px;font-weight:700;color:var(--gelb);font-variant-numeric:tabular-nums}
+.manual-input{background:#1e1e1e;border:1px solid #333;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.manual-input label{font-size:12px;color:#888;white-space:nowrap}
+.manual-input input{background:none;border:none;color:#fff;font-size:18px;font-family:'Courier New',monospace;font-weight:700;flex:1;min-width:0;outline:none}
+/* Tabellen */
+table{width:100%;border-collapse:collapse}
+th{background:var(--grau);padding:10px 12px;text-align:left;font-size:12px;font-weight:600;color:var(--text2);white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid var(--border);font-size:14px}
+tr.rang1 td{background:#fffae0}
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;display:flex;align-items:flex-end;justify-content:center}
+.modal{background:var(--hell);border-radius:20px 20px 0 0;width:100%;max-height:90vh;overflow-y:auto;padding-bottom:env(safe-area-inset-bottom)}
+.modal-header{padding:16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.modal-header h2{flex:1;font-size:18px;font-weight:700}
+.modal-footer{padding:16px;border-top:1px solid var(--border);display:flex;gap:8px}
+/* Chart */
+.chart-wrap{padding:16px;background:var(--hell);overflow-x:auto}
+canvas{max-width:100%}
+/* Status chips */
+.chip{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+.chip-offen{background:#e3f2fd;color:#1565c0}
+.chip-gefahren{background:#e8f5e9;color:#2e7d32}
+.chip-dns{background:#fff3e0;color:#e65100}
+.chip-dsq{background:#fce4ec;color:#880e4f}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="screen"></div>
+  <div id="tabs">
+    <button class="tab" data-tab="fahrer" onclick="navTab('fahrer')">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+      Fahrer
+    </button>
+    <button class="tab" data-tab="training" onclick="navTab('training')">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
+      Training
+    </button>
+    <button class="tab" data-tab="analyse" onclick="navTab('analyse')">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 9.2h3V19H5V9.2zM10.6 5h2.8v14h-2.8V5zm5.6 8H19v6h-2.8v-6z"/></svg>
+      Analyse
+    </button>
+    <button class="tab" data-tab="einstellungen" onclick="navTab('einstellungen')">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
+      Einstellungen
+    </button>
+  </div>
+</div>
+
+<script>
+// ─── Storage ────────────────────────────────────────────────────────────────
+const DB = {
+  get(k){try{return JSON.parse(localStorage.getItem(k)||'null')}catch{return null}},
+  set(k,v){localStorage.setItem(k,JSON.stringify(v))},
+  getFahrer(){return this.get('kart_fahrer')||[]},
+  setFahrer(v){this.set('kart_fahrer',v)},
+  getTrainings(){return this.get('kart_trainings')||[]},
+  setTrainings(v){this.set('kart_trainings',v)},
+  getLaeufe(){return this.get('kart_laeufe')||[]},
+  setLaeufe(v){this.set('kart_laeufe',v)},
+  getEinstellungen(){return this.get('kart_einst')||{vereinsname:'AC Helfenstein',saison:new Date().getFullYear()}},
+  setEinstellungen(v){this.set('kart_einst',v)},
+};
+
+// ─── Utilities ───────────────────────────────────────────────────────────────
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2)}
+
+function fmtZeit(ms){
+  if(ms===null||ms===undefined)return '–';
+  const neg=ms<0;ms=Math.abs(ms);
+  const min=Math.floor(ms/60000);
+  const sec=Math.floor((ms%60000)/1000);
+  const cs=Math.floor((ms%1000)/10);
+  const s=`${min}:${String(sec).padStart(2,'0')},${String(cs).padStart(2,'0')}`;
+  return neg?'-'+s:s;
+}
+
+function parseZeit(s){
+  if(!s||!s.trim())return null;
+  // formats: 1:23,45  or  83,45  or  83.45
+  s=s.trim().replace('.',',');
+  const m1=s.match(/^(\d+):(\d{1,2}),(\d{1,2})$/);
+  if(m1)return (parseInt(m1[1])*60+parseInt(m1[2]))*1000+parseInt(m1[3].padEnd(2,'0'))*10;
+  const m2=s.match(/^(\d+),(\d{1,2})$/);
+  if(m2)return parseInt(m2[1])*1000+parseInt(m2[2].padEnd(2,'0'))*10;
+  return null;
+}
+
+function fmtDatum(iso){
+  if(!iso)return '';
+  const [y,m,d]=iso.split('-');
+  return `${d}.${m}.${y}`;
+}
+
+function berechneKlasse(jahr){
+  const alter=new Date().getFullYear()-jahr;
+  if(alter>=7&&alter<=9)return 1;
+  if(alter>=10&&alter<=11)return 2;
+  if(alter>=12&&alter<=13)return 3;
+  if(alter>=14&&alter<=15)return 4;
+  if(alter>=16&&alter<=18)return 5;
+  return null;
+}
+
+function klassenBadge(k){
+  if(!k)return `<span class="badge k-none">–</span>`;
+  return `<span class="badge k${k}">K${k}</span>`;
+}
+
+// Penalty calc with 10s cap for pylon errors
+const STRAF={
+  PYLONE_UMGEWORFEN:{s:2,label:'Pylone umgeworfen',kurz:'↓ Umgeworfen',cap:true},
+  PYLONE_VERSCHOBEN:{s:2,label:'Pylone verschoben',kurz:'→ Verschoben',cap:true},
+  AUFGABE_AUSGELASSEN:{s:10,label:'Aufgabe ausgelassen',kurz:'✗ Ausgelassen',cap:false},
+  AUFGABE_FALSCH:{s:10,label:'Aufgabe falsch',kurz:'✗ Falsch',cap:false},
+  HALTELINIE:{s:2,label:'Haltelinie überfahren',kurz:'— Haltelinie',cap:false},
+};
+
+function berechneStrafSumme(strafzeiten){
+  let total=0;
+  for(const [typ,anzahl] of Object.entries(strafzeiten)){
+    const info=STRAF[typ];
+    if(!info)continue;
+    const ms=anzahl*info.s*1000;
+    total+=info.cap?Math.min(ms,10000):ms;
+  }
+  return total;
+}
+
+// ─── Router / State ──────────────────────────────────────────────────────────
+let currentTab='fahrer';
+let currentRoute={screen:'fahrer-liste'};
+// Rennmodus state
+let rennState={
+  trainingId:null,activeFahrerId:null,
+  running:false,startTime:null,elapsed:0,timerRef:null,
+  strafzeiten:{PYLONE_UMGEWORFEN:0,PYLONE_VERSCHOBEN:0,AUFGABE_AUSGELASSEN:0,AUFGABE_FALSCH:0,HALTELINIE:0},
+  manualZeit:'',laufNummer:1,
+};
+
+function navTab(tab){
+  currentTab=tab;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));
+  stopTimer();
+  if(tab==='fahrer')renderFahrerListe();
+  else if(tab==='training')renderTrainingListe();
+  else if(tab==='analyse')renderAnalyse();
+  else if(tab==='einstellungen')renderEinstellungen();
+}
+
+function setScreen(html){document.getElementById('screen').innerHTML=html}
+
+// ─── FAHRER ──────────────────────────────────────────────────────────────────
+function renderFahrerListe(){
+  const fahrer=DB.getFahrer().filter(f=>f.aktiv!==false);
+  const klassen=[null,1,2,3,4,5];
+  const grouped={};
+  klassen.forEach(k=>{
+    const list=fahrer.filter(f=>f.klasse===k);
+    if(list.length)grouped[k===null?'none':k]=list;
+  });
+
+  let html=`<div class="topbar"><h1>Fahrer (${fahrer.length})</h1></div>`;
+  if(!fahrer.length){
+    html+=`<div class="empty"><h3>Noch keine Fahrer</h3><p>Tippe + um einen Fahrer hinzuzufügen</p></div>`;
+  } else {
+    for(const [k,list] of Object.entries(grouped)){
+      const kLabel=k==='none'?'Nicht startberechtigt':`Klasse ${k}`;
+      html+=`<div class="section-header">${kLabel}</div>`;
+      list.sort((a,b)=>(a.nachname+a.vorname).localeCompare(b.nachname+b.vorname)).forEach(f=>{
+        html+=`<div class="list-item" onclick="showFahrerDetail('${f.id}')">
+          ${klassenBadge(f.klasse)}
+          <div style="flex:1"><div style="font-weight:600">${esc(f.nachname)}, ${esc(f.vorname)}</div>
+          <div style="font-size:13px;color:var(--text2)">Jg. ${f.geburtsjahr}</div></div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#ccc"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+        </div>`;
+      });
+    }
+  }
+  setScreen(html+`<button class="fab" onclick="showFahrerBearbeiten(null)">+</button>`);
+}
+
+function showFahrerDetail(id){
+  const f=DB.getFahrer().find(x=>x.id===id);
+  if(!f)return renderFahrerListe();
+  const laeufe=DB.getLaeufe().filter(l=>l.fahrerId===id&&l.status==='gefahren'&&l.gesamtzeit);
+  laeufe.sort((a,b)=>a.erfasstAm.localeCompare(b.erfasstAm));
+  const wertung=laeufe.filter(l=>l.laufTyp==='wertung');
+  const best=wertung.length?Math.min(...wertung.map(l=>l.gesamtzeit)):null;
+
+  let html=`<div class="topbar">
+    <button class="back" onclick="renderFahrerListe()">← Zurück</button>
+    <h1>${esc(f.vorname)} ${esc(f.nachname)}</h1>
+    <button class="btn btn-ghost btn-sm" onclick="showFahrerBearbeiten('${f.id}')">Bearbeiten</button>
+  </div>
+  <div class="card">
+    <div class="list-item" style="cursor:default">
+      <div style="flex:1"><div style="font-size:13px;color:var(--text2)">Klasse</div>
+      ${klassenBadge(f.klasse)} ${f.klasse?`Klasse ${f.klasse}`:'Nicht startberechtigt'}</div>
+    </div>
+    <div class="list-item" style="cursor:default">
+      <div><div style="font-size:13px;color:var(--text2)">Jahrgang</div><div style="font-weight:600">${f.geburtsjahr}</div></div>
+    </div>
+    ${f.geburtsdatum?`<div class="list-item" style="cursor:default">
+      <div><div style="font-size:13px;color:var(--text2)">Geburtsdatum</div><div style="font-weight:600">${fmtDatum(f.geburtsdatum)}</div></div>
+    </div>`:''}
+    ${best!==null?`<div class="list-item" style="cursor:default">
+      <div><div style="font-size:13px;color:var(--text2)">Beste Wertungszeit</div><div style="font-weight:700;font-size:18px;color:var(--erfolg)">${fmtZeit(best)}</div></div>
+    </div>`:''}
+  </div>`;
+
+  if(laeufe.length){
+    html+=`<div class="section-header">Zeitverlauf (${laeufe.length} Läufe)</div>
+    <div class="card"><table><thead><tr><th>Datum</th><th>Typ</th><th>Lauf</th><th>Rohzeit</th><th>Strafen</th><th>Gesamt</th></tr></thead><tbody>`;
+    laeufe.forEach(l=>{
+      const t=DB.getTrainings().find(x=>x.id===l.trainingId);
+      html+=`<tr><td>${t?fmtDatum(t.datum):'–'}</td>
+        <td><span class="chip chip-${l.laufTyp==='wertung'?'gefahren':'offen'}">${l.laufTyp==='wertung'?'Wertung':'Training'}</span></td>
+        <td>${l.laufNummer}</td><td>${fmtZeit(l.rohzeit)}</td>
+        <td>${l.strafSumme?fmtZeit(l.strafSumme):'–'}</td>
+        <td style="font-weight:700">${fmtZeit(l.gesamtzeit)}</td></tr>`;
+    });
+    html+=`</tbody></table></div>`;
+  }
+
+  html+=`<div style="padding:16px"><button class="btn btn-danger" style="width:100%" onclick="fahrerLoeschen('${f.id}')">Fahrer löschen</button></div>`;
+  setScreen(html);
+}
+
+function showFahrerBearbeiten(id){
+  const f=id?DB.getFahrer().find(x=>x.id===id):null;
+  const html=`<div class="topbar">
+    <button class="back" onclick="${id?`showFahrerDetail('${id}')`:'renderFahrerListe()'}">← Zurück</button>
+    <h1>${f?'Bearbeiten':'Neuer Fahrer'}</h1>
+  </div>
+  <div class="section-header">Fahrerdaten</div>
+  <div class="form-group"><label>Vorname *</label><input id="f-vorname" value="${esc(f?.vorname||'')}" placeholder="z.B. Max"></div>
+  <div class="form-group"><label>Nachname *</label><input id="f-nachname" value="${esc(f?.nachname||'')}" placeholder="z.B. Mustermann"></div>
+  <div class="form-group"><label>Geburtsdatum</label><input id="f-geburt" type="date" value="${f?.geburtsdatum||''}"></div>
+  <div class="form-group"><label>Jahrgang *</label><input id="f-jahr" type="number" value="${f?.geburtsjahr||''}" placeholder="z.B. 2015" onchange="updateKlassePreview()"></div>
+  <div class="form-group"><label>Berechnete Klasse</label><div id="klasse-preview">${f?klassenBadge(f.klasse)+' '+(f.klasse?`Klasse ${f.klasse}`:'Nicht startberechtigt'):'–'}</div></div>
+  <div class="form-group"><label>Notizen</label><textarea id="f-notizen">${esc(f?.notizen||'')}</textarea></div>
+  <div style="padding:16px;display:flex;gap:8px">
+    <button class="btn btn-primary" style="flex:1" onclick="saveFahrer('${id||''}')">Speichern</button>
+    <button class="btn btn-ghost" onclick="${id?`showFahrerDetail('${id}')`:'renderFahrerListe()'}">Abbrechen</button>
+  </div>`;
+  setScreen(html);
+  // Sync geburtsdatum → jahrgang
+  document.getElementById('f-geburt').addEventListener('change',function(){
+    const y=this.value.split('-')[0];
+    if(y&&y.length===4){document.getElementById('f-jahr').value=y;updateKlassePreview();}
+  });
+}
+
+function updateKlassePreview(){
+  const jahr=parseInt(document.getElementById('f-jahr')?.value);
+  if(!jahr||isNaN(jahr))return;
+  const k=berechneKlasse(jahr);
+  document.getElementById('klasse-preview').innerHTML=klassenBadge(k)+' '+(k?`Klasse ${k}`:'Nicht startberechtigt');
+}
+
+function saveFahrer(id){
+  const vorname=document.getElementById('f-vorname').value.trim();
+  const nachname=document.getElementById('f-nachname').value.trim();
+  const jahrStr=document.getElementById('f-jahr').value.trim();
+  const geburt=document.getElementById('f-geburt').value;
+  const notizen=document.getElementById('f-notizen').value.trim();
+  if(!vorname||!nachname){alert('Vorname und Nachname sind Pflichtfelder');return;}
+  const geburtsjahr=parseInt(jahrStr)||(geburt?parseInt(geburt.split('-')[0]):0);
+  if(!geburtsjahr){alert('Bitte Jahrgang eingeben');return;}
+  const klasse=berechneKlasse(geburtsjahr);
+  const alle=DB.getFahrer();
+  if(id){
+    const idx=alle.findIndex(x=>x.id===id);
+    if(idx>=0){alle[idx]={...alle[idx],vorname,nachname,geburtsdatum:geburt,geburtsjahr,klasse,notizen,aktiv:true};}
+  } else {
+    alle.push({id:uid(),vorname,nachname,geburtsdatum:geburt,geburtsjahr,klasse,notizen,aktiv:true,erstelltAm:new Date().toISOString()});
+  }
+  DB.setFahrer(alle);
+  id?showFahrerDetail(id):renderFahrerListe();
+}
+
+function fahrerLoeschen(id){
+  if(!confirm('Fahrer wirklich löschen? Alle Läufe bleiben erhalten.'))return;
+  const alle=DB.getFahrer();
+  DB.setFahrer(alle.filter(f=>f.id!==id));
+  renderFahrerListe();
+}
+
+// ─── TRAINING ────────────────────────────────────────────────────────────────
+function renderTrainingListe(){
+  const trainings=DB.getTrainings().sort((a,b)=>b.datum.localeCompare(a.datum));
+  let html=`<div class="topbar"><h1>Trainings (${trainings.length})</h1></div>`;
+  if(!trainings.length){
+    html+=`<div class="empty"><h3>Noch keine Trainings</h3><p>Tippe + um ein Training zu erstellen</p></div>`;
+  } else {
+    trainings.forEach(t=>{
+      const laeufe=DB.getLaeufe().filter(l=>l.trainingId===t.id&&l.status==='gefahren');
+      html+=`<div class="list-item" onclick="showTrainingDetail('${t.id}')">
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:16px">${esc(t.name)}</div>
+          <div style="font-size:13px;color:var(--text2);margin-top:2px">${fmtDatum(t.datum)}${t.ort?' · '+esc(t.ort):''}  · ${t.teilnehmerIds.length} Fahrer · ${laeufe.length} Läufe</div>
+        </div>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#ccc"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+      </div>`;
+    });
+  }
+  setScreen(html+`<button class="fab" onclick="showTrainingErstellen(null)">+</button>`);
+}
+
+function showTrainingErstellen(id){
+  const t=id?DB.getTrainings().find(x=>x.id===id):null;
+  const fahrer=DB.getFahrer().filter(f=>f.aktiv!==false).sort((a,b)=>(a.nachname+a.vorname).localeCompare(b.nachname+b.vorname));
+  const selIds=t?t.teilnehmerIds:[];
+  let fahrerOpts=fahrer.map(f=>`<div class="list-item" style="gap:12px" onclick="toggleTeilnehmer('${f.id}')">
+    <input type="checkbox" id="tn-${f.id}" ${selIds.includes(f.id)?'checked':''} style="width:20px;height:20px">
+    ${klassenBadge(f.klasse)} <span style="font-size:15px">${esc(f.nachname)}, ${esc(f.vorname)}</span>
+  </div>`).join('');
+  if(!fahrer.length)fahrerOpts=`<div class="empty" style="padding:20px"><p>Erst Fahrer anlegen</p></div>`;
+
+  const numLauefe=t?t.anzahlLauefe:3;
+  const typen=t?t.laufTypen:['training','wertung','wertung'];
+
+  let laufTypenHtml='';
+  for(let i=0;i<numLauefe;i++){
+    const typ=typen[i]||'wertung';
+    laufTypenHtml+=`<div class="form-group" style="padding:8px 16px;display:flex;align-items:center;gap:12px">
+      <label style="margin:0;min-width:60px">Lauf ${i+1}</label>
+      <select onchange="updateLaufTyp(${i},this.value)" id="lt-${i}">
+        <option value="training" ${typ==='training'?'selected':''}>Training</option>
+        <option value="wertung" ${typ==='wertung'?'selected':''}>Wertung</option>
+      </select>
+    </div>`;
+  }
+
+  const html=`<div class="topbar">
+    <button class="back" onclick="${id?`showTrainingDetail('${id}')`:'renderTrainingListe()'}">← Zurück</button>
+    <h1>${t?'Training bearbeiten':'Neues Training'}</h1>
+  </div>
+  <div class="section-header">Allgemein</div>
+  <div class="form-group"><label>Name *</label><input id="t-name" value="${esc(t?.name||'')}" placeholder="z.B. Training Mai"></div>
+  <div class="form-group"><label>Datum *</label><input id="t-datum" type="date" value="${t?.datum||new Date().toISOString().slice(0,10)}"></div>
+  <div class="form-group"><label>Ort</label><input id="t-ort" value="${esc(t?.ort||'')}" placeholder="z.B. Kartbahn Muster"></div>
+  <div class="form-group"><label>Notizen</label><textarea id="t-notizen">${esc(t?.notizen||'')}</textarea></div>
+  <div class="section-header">Läufe</div>
+  <div class="form-group"><label>Anzahl Läufe</label>
+    <input id="t-lauefe" type="number" min="1" max="10" value="${numLauefe}" onchange="updateLaufAnzahl(this.value,'${id||''}')">
+  </div>
+  <div id="lauf-typen">${laufTypenHtml}</div>
+  <div class="section-header">Teilnehmer</div>
+  <div id="teilnehmer-liste">${fahrerOpts}</div>
+  <div style="padding:16px;display:flex;gap:8px">
+    <button class="btn btn-primary" style="flex:1" onclick="saveTraining('${id||''}')">Speichern</button>
+    <button class="btn btn-ghost" onclick="${id?`showTrainingDetail('${id}')`:'renderTrainingListe()'}">Abbrechen</button>
+  </div>`;
+  setScreen(html);
+}
+
+let _tmpLaufTypen=['training','wertung','wertung'];
+function updateLaufTyp(i,v){_tmpLaufTypen[i]=v;}
+function updateLaufAnzahl(n,editId){
+  n=Math.max(1,Math.min(10,parseInt(n)||3));
+  while(_tmpLaufTypen.length<n)_tmpLaufTypen.push('wertung');
+  _tmpLaufTypen=_tmpLaufTypen.slice(0,n);
+  // Re-render lauf typen
+  let html='';
+  for(let i=0;i<n;i++){
+    const typ=_tmpLaufTypen[i]||'wertung';
+    html+=`<div class="form-group" style="padding:8px 16px;display:flex;align-items:center;gap:12px">
+      <label style="margin:0;min-width:60px">Lauf ${i+1}</label>
+      <select onchange="updateLaufTyp(${i},this.value)" id="lt-${i}">
+        <option value="training" ${typ==='training'?'selected':''}>Training</option>
+        <option value="wertung" ${typ==='wertung'?'selected':''}>Wertung</option>
+      </select>
+    </div>`;
+  }
+  document.getElementById('lauf-typen').innerHTML=html;
+}
+function toggleTeilnehmer(id){
+  const cb=document.getElementById('tn-'+id);
+  if(cb)cb.checked=!cb.checked;
+}
+
+function saveTraining(id){
+  const name=document.getElementById('t-name').value.trim();
+  const datum=document.getElementById('t-datum').value;
+  const ort=document.getElementById('t-ort').value.trim();
+  const notizen=document.getElementById('t-notizen').value.trim();
+  const anzahl=parseInt(document.getElementById('t-lauefe').value)||3;
+  if(!name||!datum){alert('Name und Datum sind Pflichtfelder');return;}
+  // Collect laufTypen from selects
+  const laufTypen=[];
+  for(let i=0;i<anzahl;i++){
+    const sel=document.getElementById('lt-'+i);
+    laufTypen.push(sel?sel.value:'wertung');
+  }
+  // Collect teilnehmer
+  const teilnehmerIds=DB.getFahrer().filter(f=>f.aktiv!==false&&document.getElementById('tn-'+f.id)?.checked).map(f=>f.id);
+  const alle=DB.getTrainings();
+  if(id){
+    const idx=alle.findIndex(x=>x.id===id);
+    if(idx>=0)alle[idx]={...alle[idx],name,datum,ort,notizen,anzahlLauefe:anzahl,laufTypen,teilnehmerIds};
+  } else {
+    const neu={id:uid(),name,datum,ort,notizen,anzahlLauefe:anzahl,laufTypen,teilnehmerIds,erstelltAm:new Date().toISOString()};
+    alle.push(neu);
+    id=neu.id;
+  }
+  DB.setTrainings(alle);
+  showTrainingDetail(id);
+}
+
+function showTrainingDetail(id){
+  const t=DB.getTrainings().find(x=>x.id===id);
+  if(!t)return renderTrainingListe();
+  const fahrer=DB.getFahrer().filter(f=>t.teilnehmerIds.includes(f.id));
+  const laeufe=DB.getLaeufe().filter(l=>l.trainingId===id);
+
+  // Build matrix: fahrer × läufe
+  let matrixHtml='<thead><tr><th>Fahrer</th>';
+  for(let i=1;i<=t.anzahlLauefe;i++)matrixHtml+=`<th>L${i}<br><small style="font-weight:400">${(t.laufTypen[i-1]||'wertung')==='wertung'?'Wert.':'Train.'}</small></th>`;
+  matrixHtml+='</tr></thead><tbody>';
+  fahrer.sort((a,b)=>(a.nachname+a.vorname).localeCompare(b.nachname+b.vorname)).forEach(f=>{
+    matrixHtml+=`<tr><td style="font-weight:600;white-space:nowrap">${klassenBadge(f.klasse)} ${esc(f.nachname)}</td>`;
+    for(let i=1;i<=t.anzahlLauefe;i++){
+      const l=laeufe.find(x=>x.fahrerId===f.id&&x.laufNummer===i);
+      if(!l)matrixHtml+=`<td style="color:var(--text2)">–</td>`;
+      else if(l.status==='dsq')matrixHtml+=`<td><span class="chip chip-dsq">DSQ</span></td>`;
+      else if(l.status==='dns')matrixHtml+=`<td><span class="chip chip-dns">DNS</span></td>`;
+      else matrixHtml+=`<td style="font-weight:600">${fmtZeit(l.gesamtzeit)}</td>`;
+    }
+    matrixHtml+='</tr>';
+  });
+  matrixHtml+='</tbody>';
+
+  const html=`<div class="topbar">
+    <button class="back" onclick="renderTrainingListe()">← Zurück</button>
+    <h1>${esc(t.name)}</h1>
+    <button class="btn btn-ghost btn-sm" onclick="showTrainingErstellen('${t.id}')">Bearbeiten</button>
+  </div>
+  <div class="card">
+    <div class="list-item" style="cursor:default"><div>
+      <div style="font-size:13px;color:var(--text2)">Datum · Ort</div>
+      <div style="font-weight:600">${fmtDatum(t.datum)}${t.ort?' · '+esc(t.ort):''}</div>
+    </div></div>
+    <div class="list-item" style="cursor:default"><div>
+      <div style="font-size:13px;color:var(--text2)">Teilnehmer · Läufe</div>
+      <div style="font-weight:600">${t.teilnehmerIds.length} Fahrer · ${t.anzahlLauefe} Läufe</div>
+    </div></div>
+  </div>
+  <div style="padding:12px 16px;display:flex;gap:8px">
+    <button class="btn btn-primary" style="flex:1" onclick="startRennmodus('${t.id}')">▶ Rennmodus</button>
+    <button class="btn btn-ghost" onclick="showErgebnisliste('${t.id}')">Ergebnisse</button>
+  </div>
+  <div class="section-header">Lauf-Matrix</div>
+  <div style="overflow-x:auto;margin:0 0 8px">
+    <div style="background:var(--hell);padding:8px"><table>${matrixHtml}</table></div>
+  </div>
+  <div style="padding:16px"><button class="btn btn-danger btn-sm" onclick="trainingLoeschen('${t.id}')">Training löschen</button></div>`;
+  setScreen(html);
+}
+
+function trainingLoeschen(id){
+  if(!confirm('Training und alle Läufe löschen?'))return;
+  DB.setTrainings(DB.getTrainings().filter(t=>t.id!==id));
+  DB.setLaeufe(DB.getLaeufe().filter(l=>l.trainingId!==id));
+  renderTrainingListe();
+}
+
+// ─── RENNMODUS ───────────────────────────────────────────────────────────────
+function startRennmodus(trainingId){
+  stopTimer();
+  const t=DB.getTrainings().find(x=>x.id===trainingId);
+  if(!t){alert('Training nicht gefunden');return;}
+  const fahrer=DB.getFahrer().filter(f=>t.teilnehmerIds.includes(f.id));
+  if(!fahrer.length){alert('Keine Teilnehmer im Training');return;}
+  rennState={
+    trainingId,activeFahrerId:fahrer[0].id,
+    running:false,startTime:null,elapsed:0,timerRef:null,
+    strafzeiten:{PYLONE_UMGEWORFEN:0,PYLONE_VERSCHOBEN:0,AUFGABE_AUSGELASSEN:0,AUFGABE_FALSCH:0,HALTELINIE:0},
+    manualZeit:'',laufNummer:1,
+  };
+  document.getElementById('tabs').style.display='none';
+  document.getElementById('screen').style.padding='0';
+  renderRennmodus();
+}
+
+function renderRennmodus(){
+  const t=DB.getTrainings().find(x=>x.id===rennState.trainingId);
+  if(!t)return;
+  const allFahrer=DB.getFahrer().filter(f=>t.teilnehmerIds.includes(f.id))
+    .sort((a,b)=>(a.nachname+a.vorname).localeCompare(b.nachname+b.vorname));
+  const active=allFahrer.find(f=>f.id===rennState.activeFahrerId)||allFahrer[0];
+  const laeufe=DB.getLaeufe().filter(l=>l.trainingId===rennState.trainingId);
+
+  // Left panel
+  let leftHtml='';
+  allFahrer.forEach(f=>{
+    const myLaeufe=laeufe.filter(l=>l.fahrerId===f.id&&l.status==='gefahren');
+    const best=myLaeufe.length?fmtZeit(Math.min(...myLaeufe.map(l=>l.gesamtzeit))):'–';
+    leftHtml+=`<div class="fahrer-row ${f.id===active?.id?'active':''}" onclick="rennSelectFahrer('${f.id}')">
+      ${klassenBadge(f.klasse)}
+      <div><div class="name">${esc(f.nachname)}</div>
+      <div class="sub">${esc(f.vorname)} · ${myLaeufe.length} Läufe · ${best}</div></div>
+    </div>`;
+  });
+
+  // Strafzeit totals
+  const strafSumme=berechneStrafSumme(rennState.strafzeiten);
+  const rohzeit=rennState.manualZeit?parseZeit(rennState.manualZeit):rennState.elapsed;
+  const gesamt=rohzeit!==null?rohzeit+strafSumme:null;
+
+  // Determine next lauf number
+  const nextLaufNr=rennState.laufNummer;
+  const laufTyp=t.laufTypen[nextLaufNr-1]||'wertung';
+
+  // Straf buttons
+  let strafHtml='';
+  const STRAF_ORDER=['PYLONE_UMGEWORFEN','PYLONE_VERSCHOBEN','HALTELINIE','AUFGABE_AUSGELASSEN','AUFGABE_FALSCH'];
+  STRAF_ORDER.forEach(typ=>{
+    const info=STRAF[typ];
+    const cnt=rennState.strafzeiten[typ];
+    const maxed=info.cap&&cnt*info.s>=10;
+    strafHtml+=`<div class="straf-btn-row">
+      <div class="label">${info.kurz}</div>
+      <div class="count-ctrl">
+        <button class="cnt-btn cnt-minus" onclick="strafChange('${typ}',-1)">−</button>
+        <span class="cnt-val">${cnt}</span>
+        <button class="cnt-btn cnt-plus" onclick="strafChange('${typ}',1)" ${maxed?'style="opacity:.4"':''}>+</button>
+      </div>
+      <span style="font-size:12px;color:#666;min-width:40px;text-align:right">+${fmtZeit(info.cap?Math.min(cnt*info.s*1000,10000):cnt*info.s*1000)}</span>
+    </div>`;
+  });
+
+  const timeDisplay=rennState.manualZeit||fmtZeit(rennState.elapsed);
+
+  const screen=document.getElementById('screen');
+  screen.innerHTML=`<div id="rennmodus-screen">
+    <div class="renn-left">
+      <h2>FAHRER</h2>
+      ${leftHtml}
+    </div>
+    <div class="renn-right">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div>
+          <div class="renn-fahrer-name">${active?esc(active.vorname)+' '+esc(active.nachname):'–'}</div>
+          <div class="renn-lauf-info">Lauf ${nextLaufNr} · ${laufTyp==='wertung'?'Wertungslauf':'Trainingslauf'}</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" style="background:#333;color:#ccc;border-color:#444" onclick="beendeRennmodus()">✕ Beenden</button>
+      </div>
+
+      <div class="stopwatch">
+        <div class="stopwatch-time" id="sw-time">${timeDisplay}</div>
+        <div class="stopwatch-btns">
+          <button class="sw-btn ${rennState.running?'sw-stop':'sw-start'}" id="sw-toggle" onclick="toggleTimer()">${rennState.running?'STOPP':'START'}</button>
+          <button class="sw-btn sw-reset" onclick="resetTimer()">RESET</button>
+        </div>
+      </div>
+
+      <div class="manual-input">
+        <label>Manuelle Zeit:</label>
+        <input id="manual-zeit" placeholder="1:23,45" value="${rennState.manualZeit}" oninput="rennState.manualZeit=this.value;updateZeitSumme()" type="tel">
+      </div>
+
+      <div id="straf-container">${strafHtml}</div>
+
+      <div class="zeit-summe">
+        <div>
+          <div class="label">Rohzeit</div>
+          <div style="color:#ccc;font-size:16px">${fmtZeit(rohzeit)}</div>
+        </div>
+        <div style="text-align:center">
+          <div class="label">+ Strafen</div>
+          <div style="color:var(--fehler);font-size:16px">${fmtZeit(strafSumme)}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="label">Gesamt</div>
+          <div class="val" id="gesamt-val">${fmtZeit(gesamt)}</div>
+        </div>
+      </div>
+
+      <div class="renn-save-area">
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" style="flex:1;min-height:56px;font-size:17px" onclick="speichereLauf('gefahren')">💾 Speichern</button>
+          <button class="btn" style="background:#333;color:#ccc;min-width:64px" onclick="speichereLauf('dns')">DNS</button>
+          <button class="btn" style="background:#333;color:#ccc;min-width:64px" onclick="speichereLauf('dsq')">DSQ</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:4px">
+          <button class="btn btn-ghost" style="flex:1;color:#aaa;border-color:#333" onclick="rennPrevLauf()">← Lauf ${nextLaufNr>1?nextLaufNr-1:'–'}</button>
+          <button class="btn btn-ghost" style="flex:1;color:#aaa;border-color:#333" onclick="rennNextLauf()">Lauf ${nextLaufNr<t.anzahlLauefe?nextLaufNr+1:'–'} →</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function rennSelectFahrer(id){
+  stopTimer();
+  rennState.activeFahrerId=id;
+  rennState.elapsed=0;
+  rennState.manualZeit='';
+  rennState.strafzeiten={PYLONE_UMGEWORFEN:0,PYLONE_VERSCHOBEN:0,AUFGABE_AUSGELASSEN:0,AUFGABE_FALSCH:0,HALTELINIE:0};
+  renderRennmodus();
+}
+
+function strafChange(typ,delta){
+  rennState.strafzeiten[typ]=Math.max(0,rennState.strafzeiten[typ]+delta);
+  updateStrafenDisplay();
+  updateZeitSumme();
+}
+
+function updateStrafenDisplay(){
+  const t=DB.getTrainings().find(x=>x.id===rennState.trainingId);
+  if(!t)return;
+  const STRAF_ORDER=['PYLONE_UMGEWORFEN','PYLONE_VERSCHOBEN','HALTELINIE','AUFGABE_AUSGELASSEN','AUFGABE_FALSCH'];
+  let strafHtml='';
+  STRAF_ORDER.forEach(typ=>{
+    const info=STRAF[typ];
+    const cnt=rennState.strafzeiten[typ];
+    const maxed=info.cap&&cnt*info.s>=10;
+    strafHtml+=`<div class="straf-btn-row">
+      <div class="label">${info.kurz}</div>
+      <div class="count-ctrl">
+        <button class="cnt-btn cnt-minus" onclick="strafChange('${typ}',-1)">−</button>
+        <span class="cnt-val">${cnt}</span>
+        <button class="cnt-btn cnt-plus" onclick="strafChange('${typ}',1)" ${maxed?'style="opacity:.4"':''}>+</button>
+      </div>
+      <span style="font-size:12px;color:#666;min-width:40px;text-align:right">+${fmtZeit(info.cap?Math.min(cnt*info.s*1000,10000):cnt*info.s*1000)}</span>
+    </div>`;
+  });
+  const el=document.getElementById('straf-container');
+  if(el)el.innerHTML=strafHtml;
+}
+
+function updateZeitSumme(){
+  const strafSumme=berechneStrafSumme(rennState.strafzeiten);
+  const rohzeit=rennState.manualZeit?parseZeit(rennState.manualZeit):rennState.elapsed;
+  const gesamt=rohzeit!==null?rohzeit+strafSumme:null;
+  const el=document.getElementById('gesamt-val');
+  if(el)el.textContent=fmtZeit(gesamt);
+}
+
+let _timerInterval=null;
+function toggleTimer(){
+  if(rennState.running){
+    stopTimer();
+  } else {
+    rennState.startTime=Date.now()-rennState.elapsed;
+    rennState.running=true;
+    _timerInterval=setInterval(()=>{
+      rennState.elapsed=Date.now()-rennState.startTime;
+      const el=document.getElementById('sw-time');
+      if(el)el.textContent=fmtZeit(rennState.elapsed);
+      updateZeitSumme();
+    },10);
+    const btn=document.getElementById('sw-toggle');
+    if(btn){btn.textContent='STOPP';btn.className='sw-btn sw-stop';}
+  }
+}
+
+function stopTimer(){
+  if(_timerInterval){clearInterval(_timerInterval);_timerInterval=null;}
+  rennState.running=false;
+}
+
+function resetTimer(){
+  stopTimer();
+  rennState.elapsed=0;
+  rennState.manualZeit='';
+  const el=document.getElementById('sw-time');
+  if(el)el.textContent='0:00,00';
+  const btn=document.getElementById('sw-toggle');
+  if(btn){btn.textContent='START';btn.className='sw-btn sw-start';}
+  updateZeitSumme();
+}
+
+function speichereLauf(status){
+  if(!rennState.activeFahrerId){alert('Kein Fahrer ausgewählt');return;}
+  const t=DB.getTrainings().find(x=>x.id===rennState.trainingId);
+  if(!t)return;
+  stopTimer();
+  let rohzeit=null;
+  let erfasstPer='stoppuhr';
+  if(rennState.manualZeit){
+    rohzeit=parseZeit(rennState.manualZeit);
+    erfasstPer='manuell';
+    if(rohzeit===null&&status==='gefahren'){alert('Ungültige Zeit. Format: 1:23,45');return;}
+  } else if(status==='gefahren'){
+    rohzeit=rennState.elapsed;
+    if(!rohzeit){alert('Bitte Zeit stoppen oder manuell eingeben');return;}
+  }
+  const strafSumme=berechneStrafSumme(rennState.strafzeiten);
+  const gesamtzeit=rohzeit!==null?rohzeit+strafSumme:null;
+  const laufNummer=rennState.laufNummer;
+  const laufTyp=t.laufTypen[laufNummer-1]||'wertung';
+
+  // Remove existing lauf for this fahrer+laufNummer if any
+  const alle=DB.getLaeufe().filter(l=>!(l.trainingId===rennState.trainingId&&l.fahrerId===rennState.activeFahrerId&&l.laufNummer===laufNummer));
+  const strafObj=[];
+  for(const [typ,anzahl] of Object.entries(rennState.strafzeiten)){
+    if(anzahl>0)strafObj.push({typ,sekunden:STRAF[typ].s,anzahl});
+  }
+  alle.push({
+    id:uid(),fahrerId:rennState.activeFahrerId,trainingId:rennState.trainingId,
+    laufNummer,laufTyp,rohzeit,strafzeiten:strafObj,strafSumme,gesamtzeit,
+    status,erfasstAm:new Date().toISOString(),erfasstPer,
+  });
+  DB.setLaeufe(alle);
+
+  // Advance to next fahrer
+  const allFahrer=DB.getFahrer().filter(f=>t.teilnehmerIds.includes(f.id))
+    .sort((a,b)=>(a.nachname+a.vorname).localeCompare(b.nachname+b.vorname));
+  const idx=allFahrer.findIndex(f=>f.id===rennState.activeFahrerId);
+  const next=allFahrer[(idx+1)%allFahrer.length];
+  rennState.activeFahrerId=next.id;
+  rennState.elapsed=0;
+  rennState.manualZeit='';
+  rennState.strafzeiten={PYLONE_UMGEWORFEN:0,PYLONE_VERSCHOBEN:0,AUFGABE_AUSGELASSEN:0,AUFGABE_FALSCH:0,HALTELINIE:0};
+  renderRennmodus();
+}
+
+function rennNextLauf(){
+  const t=DB.getTrainings().find(x=>x.id===rennState.trainingId);
+  if(rennState.laufNummer<t.anzahlLauefe){
+    rennState.laufNummer++;
+    resetRennStateKeepFahrer();
+    renderRennmodus();
+  }
+}
+function rennPrevLauf(){
+  if(rennState.laufNummer>1){
+    rennState.laufNummer--;
+    resetRennStateKeepFahrer();
+    renderRennmodus();
+  }
+}
+function resetRennStateKeepFahrer(){
+  stopTimer();
+  rennState.elapsed=0;
+  rennState.manualZeit='';
+  rennState.strafzeiten={PYLONE_UMGEWORFEN:0,PYLONE_VERSCHOBEN:0,AUFGABE_AUSGELASSEN:0,AUFGABE_FALSCH:0,HALTELINIE:0};
+}
+
+function beendeRennmodus(){
+  stopTimer();
+  document.getElementById('tabs').style.display='flex';
+  document.getElementById('screen').style.padding='';
+  const id=rennState.trainingId;
+  rennState.trainingId=null;
+  if(id)showTrainingDetail(id);
+  else renderTrainingListe();
+}
+
+// ─── ERGEBNISLISTE ───────────────────────────────────────────────────────────
+function showErgebnisliste(trainingId){
+  const t=DB.getTrainings().find(x=>x.id===trainingId);
+  if(!t)return;
+  const laeufe=DB.getLaeufe().filter(l=>l.trainingId===trainingId);
+  const fahrer=DB.getFahrer().filter(f=>t.teilnehmerIds.includes(f.id));
+
+  // Group by klasse and calculate best wertung time
+  const ergebnisse=fahrer.map(f=>{
+    const myLaeufe=laeufe.filter(l=>l.fahrerId===f.id);
+    const wertung=myLaeufe.filter(l=>l.laufTyp==='wertung'&&l.status==='gefahren'&&l.gesamtzeit);
+    const bestWertung=wertung.length?Math.min(...wertung.map(l=>l.gesamtzeit)):null;
+    const bestGesamt=myLaeufe.filter(l=>l.status==='gefahren'&&l.gesamtzeit).length
+      ?Math.min(...myLaeufe.filter(l=>l.status==='gefahren'&&l.gesamtzeit).map(l=>l.gesamtzeit)):null;
+    return {...f,myLaeufe,bestWertung,bestGesamt};
+  }).sort((a,b)=>{
+    if(a.bestWertung&&b.bestWertung)return a.bestWertung-b.bestWertung;
+    if(a.bestWertung)return -1;
+    if(b.bestWertung)return 1;
+    return 0;
+  });
+
+  // Group by klasse
+  const klassen=[1,2,3,4,5];
+  let html=`<div class="topbar">
+    <button class="back" onclick="showTrainingDetail('${trainingId}')">← Zurück</button>
+    <h1>Ergebnisse</h1>
+  </div>
+  <div style="padding:8px 16px;background:var(--grau);font-size:13px;color:var(--text2)">${esc(t.name)} · ${fmtDatum(t.datum)}</div>`;
+
+  klassen.forEach(k=>{
+    const gruppe=ergebnisse.filter(f=>f.klasse===k);
+    if(!gruppe.length)return;
+    html+=`<div class="section-header">Klasse ${k}</div>
+    <div style="overflow-x:auto"><table><thead><tr>
+      <th>Pl.</th><th>Fahrer</th>`;
+    for(let i=1;i<=t.anzahlLauefe;i++)html+=`<th>L${i}</th>`;
+    html+=`<th>Beste</th></tr></thead><tbody>`;
+    gruppe.forEach((f,i)=>{
+      const rang=f.bestWertung?i+1:null;
+      html+=`<tr ${rang===1?'class="rang1"':''}>
+        <td style="font-weight:700">${rang||'–'}</td>
+        <td style="white-space:nowrap;font-weight:600">${esc(f.nachname)}, ${esc(f.vorname)}</td>`;
+      for(let n=1;n<=t.anzahlLauefe;n++){
+        const l=f.myLaeufe.find(x=>x.laufNummer===n);
+        if(!l)html+=`<td style="color:var(--text2)">–</td>`;
+        else if(l.status==='dsq')html+=`<td><span class="chip chip-dsq">DSQ</span></td>`;
+        else if(l.status==='dns')html+=`<td><span class="chip chip-dns">DNS</span></td>`;
+        else html+=`<td>${fmtZeit(l.gesamtzeit)}</td>`;
+      }
+      html+=`<td style="font-weight:700;color:var(--erfolg)">${fmtZeit(f.bestWertung)}</td></tr>`;
+    });
+    html+=`</tbody></table></div>`;
+  });
+
+  const ohneKlasse=ergebnisse.filter(f=>!f.klasse);
+  if(ohneKlasse.length){
+    html+=`<div class="section-header">Ohne Klasse</div>`;
+    ohneKlasse.forEach(f=>{
+      html+=`<div class="list-item" style="cursor:default">${esc(f.nachname)}, ${esc(f.vorname)}</div>`;
+    });
+  }
+  setScreen(html);
+}
+
+// ─── ANALYSE ─────────────────────────────────────────────────────────────────
+function renderAnalyse(){
+  const fahrer=DB.getFahrer().filter(f=>f.aktiv!==false).sort((a,b)=>(a.nachname+a.vorname).localeCompare(b.nachname+b.vorname));
+  const laeufe=DB.getLaeufe().filter(l=>l.status==='gefahren'&&l.gesamtzeit&&l.laufTyp==='wertung');
+  const trainings=DB.getTrainings();
+
+  if(!laeufe.length){
+    setScreen(`<div class="topbar"><h1>Analyse</h1></div>
+      <div class="empty"><h3>Noch keine Wertungsläufe</h3><p>Erfasse zuerst Läufe im Rennmodus</p></div>`);
+    return;
+  }
+
+  // Per-fahrer best times over trainings
+  let tableHtml='<thead><tr><th>Fahrer</th><th>Klasse</th><th>Läufe</th><th>Bestzeit</th><th>Letzte</th></tr></thead><tbody>';
+  fahrer.forEach(f=>{
+    const fl=laeufe.filter(l=>l.fahrerId===f.id).sort((a,b)=>a.erfasstAm.localeCompare(b.erfasstAm));
+    if(!fl.length)return;
+    const best=Math.min(...fl.map(l=>l.gesamtzeit));
+    const last=fl[fl.length-1];
+    tableHtml+=`<tr onclick="showFahrerDetail('${f.id}')" style="cursor:pointer">
+      <td style="font-weight:600">${esc(f.nachname)}, ${esc(f.vorname)}</td>
+      <td>${klassenBadge(f.klasse)}</td>
+      <td>${fl.length}</td>
+      <td style="font-weight:700;color:var(--erfolg)">${fmtZeit(best)}</td>
+      <td>${fmtZeit(last.gesamtzeit)}</td>
+    </tr>`;
+  });
+  tableHtml+='</tbody>';
+
+  setScreen(`<div class="topbar"><h1>Analyse</h1></div>
+    <div class="section-header">Bestzeiten (Wertungsläufe)</div>
+    <div style="overflow-x:auto;background:var(--hell)"><table>${tableHtml}</table></div>
+    <div style="padding:16px;color:var(--text2);font-size:13px">Tippe auf einen Fahrer für Zeitverlauf-Details.</div>`);
+}
+
+// ─── EINSTELLUNGEN ───────────────────────────────────────────────────────────
+function renderEinstellungen(){
+  const e=DB.getEinstellungen();
+  const fahrerCount=DB.getFahrer().length;
+  const trainingCount=DB.getTrainings().length;
+  const laufCount=DB.getLaeufe().length;
+
+  const html=`<div class="topbar"><h1>Einstellungen</h1></div>
+  <div class="section-header">Verein</div>
+  <div class="form-group"><label>Vereinsname</label><input id="e-verein" value="${esc(e.vereinsname)}"></div>
+  <div class="form-group"><label>Saison</label><input id="e-saison" type="number" value="${e.saison}"></div>
+  <div style="padding:12px 16px"><button class="btn btn-primary" onclick="saveEinstellungen()">Speichern</button></div>
+  <div class="section-header">Daten</div>
+  <div class="list-item" style="cursor:default"><div style="flex:1">Fahrer</div><strong>${fahrerCount}</strong></div>
+  <div class="list-item" style="cursor:default"><div style="flex:1">Trainings</div><strong>${trainingCount}</strong></div>
+  <div class="list-item" style="cursor:default"><div style="flex:1">Läufe</div><strong>${laufCount}</strong></div>
+  <div class="section-header">Export / Import</div>
+  <div style="padding:12px 16px;display:flex;flex-direction:column;gap:8px">
+    <button class="btn btn-ghost" onclick="exportDaten()">📤 Alle Daten exportieren (JSON)</button>
+    <label class="btn btn-ghost" style="cursor:pointer">📥 Daten importieren (JSON)<input type="file" accept=".json" style="display:none" onchange="importDaten(event)"></label>
+  </div>
+  <div class="section-header">Gefahr</div>
+  <div style="padding:12px 16px">
+    <button class="btn btn-danger" onclick="alleDatenLoeschen()">Alle Daten löschen</button>
+  </div>`;
+  setScreen(html);
+}
+
+function saveEinstellungen(){
+  DB.setEinstellungen({
+    vereinsname:document.getElementById('e-verein').value.trim()||'AC Helfenstein',
+    saison:parseInt(document.getElementById('e-saison').value)||new Date().getFullYear(),
+  });
+  alert('Gespeichert!');
+}
+
+function exportDaten(){
+  const data={fahrer:DB.getFahrer(),trainings:DB.getTrainings(),laeufe:DB.getLaeufe(),einstellungen:DB.getEinstellungen(),exportiert:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`kartslalom-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();URL.revokeObjectURL(url);
+}
+
+function importDaten(ev){
+  const file=ev.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const d=JSON.parse(e.target.result);
+      if(!confirm(`Import: ${d.fahrer?.length||0} Fahrer, ${d.trainings?.length||0} Trainings, ${d.laeufe?.length||0} Läufe.\n\nBestehende Daten werden überschrieben!`))return;
+      if(d.fahrer)DB.setFahrer(d.fahrer);
+      if(d.trainings)DB.setTrainings(d.trainings);
+      if(d.laeufe)DB.setLaeufe(d.laeufe);
+      if(d.einstellungen)DB.setEinstellungen(d.einstellungen);
+      alert('Import erfolgreich!');
+      renderEinstellungen();
+    }catch{alert('Ungültige JSON-Datei');}
+  };
+  reader.readAsText(file);
+}
+
+function alleDatenLoeschen(){
+  if(!confirm('WIRKLICH ALLE DATEN LÖSCHEN?\nDiese Aktion kann nicht rückgängig gemacht werden!'))return;
+  if(!confirm('Letzter Check: Alles löschen?'))return;
+  localStorage.removeItem('kart_fahrer');localStorage.removeItem('kart_trainings');
+  localStorage.removeItem('kart_laeufe');localStorage.removeItem('kart_einst');
+  alert('Alle Daten gelöscht');renderFahrerListe();
+}
+
+function esc(s){
+  if(!s)return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ─── Init ────────────────────────────────────────────────────────────────────
+navTab('fahrer');
+</script>
+</body>
+</html>
